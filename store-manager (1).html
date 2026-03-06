@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Store Manager — 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0f1923;--muted:#6b7c93;--subtle:#e8ecf0;--surface:#f4f6f8;--white:#fff;--green:#00875a;--green-bg:#e3f5ee;--amber:#b45309;--amber-bg:#fef3c7;--blue:#1d4ed8;--blue-bg:#dbeafe;--red:#b91c1c;--red-bg:#fee2e2;--violet:#6d28d9;--violet-bg:#ede9fe;--slate:#475569;--slate-bg:#f1f5f9;--orange:#c2410c;--orange-bg:#ffedd5;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+header{background:var(--ink);display:flex;align-items:center;height:52px;padding:0 20px;flex-shrink:0;gap:0;}
+.logo{font-family:'Playfair Display',serif;color:white;font-size:16px;font-weight:700;margin-right:22px;white-space:nowrap;}
+.logo-dot{color:#f59e0b;}
+nav{display:flex;gap:2px;}
+.nav-btn{padding:5px 13px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:#94a3b8;transition:all .15s;white-space:nowrap;position:relative;}
+.nav-btn:hover{color:white;}
+.nav-btn.active{background:rgba(255,255,255,.13);color:white;}
+.pbadge{position:absolute;top:2px;right:2px;background:#ef4444;color:white;font-size:9px;font-weight:700;border-radius:10px;padding:0 4px;min-width:14px;text-align:center;line-height:14px;}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.hstat{color:#94a3b8;font-size:12px;white-space:nowrap;}
+.hstat span{color:white;font-weight:600;}
+.sync-btn{display:flex;align-items:center;gap:5px;cursor:pointer;padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.sync-btn:hover{background:rgba(255,255,255,.08);color:white;}
+.sdot{width:7px;height:7px;border-radius:50%;background:#94a3b8;flex-shrink:0;}
+.sdot.ok{background:#34d399;}
+.sdot.busy{background:#f59e0b;animation:pulse 1s infinite;}
+.sdot.err{background:#f87171;}
+.team-sel{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:white;font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 8px;border-radius:6px;cursor:pointer;outline:none;}
+.team-sel option{background:#1e293b;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sync-btn{display:flex!important;align-items:center;gap:5px;cursor:pointer;padding:6px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.35)!important;background:rgba(255,255,255,.12)!important;color:white!important;font-family:"DM Sans",sans-serif;font-size:12px;font-weight:600;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.sync-btn:hover{background:rgba(255,255,255,.22)!important;}
+@media(max-width:960px){.hstat{display:none;}.team-sel{max-width:120px;}}
+.app-body{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:218px;background:white;border-right:1px solid var(--subtle);display:flex;flex-direction:column;flex-shrink:0;}
+.sb-sec{padding:12px;border-bottom:1px solid var(--subtle);}
+.sb-sec.grow{flex:1;overflow:auto;}
+.sb-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px;}
+.sw{position:relative;}
+.sw input{width:100%;padding:7px 10px 7px 28px;border:1px solid var(--subtle);border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);outline:none;background:var(--surface);}
+.sw input:focus{border-color:#94a3b8;background:white;}
+.sw::before{content:"⌕";position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none;}
+.fl{display:flex;flex-direction:column;gap:2px;}
+.fi{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-radius:6px;cursor:pointer;transition:background .1s;font-size:13px;}
+.fi:hover{background:var(--surface);}
+.fi.active{background:var(--ink);color:white;}
+.fi.active .fc{background:rgba(255,255,255,.2);color:white;}
+.fc{background:var(--surface);color:var(--muted);font-size:11px;font-weight:600;padding:1px 6px;border-radius:20px;}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.toolbar{background:white;border-bottom:1px solid var(--subtle);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.ttitle{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-right:auto;}
+.cpill{background:var(--surface);color:var(--muted);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;font-family:'DM Sans',sans-serif;}
+.tw{flex:1;overflow:auto;}
+table{width:100%;border-collapse:collapse;}
+thead{position:sticky;top:0;z-index:1;}
+thead tr{background:var(--surface);border-bottom:2px solid var(--subtle);}
+th{padding:8px 13px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);text-align:left;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--subtle);cursor:pointer;transition:background .1s;}
+tbody tr:hover{background:#f0f7ff;}
+tbody tr.sel{background:#e8f0fe!important;}
+td{padding:10px 13px;font-size:13px;vertical-align:middle;}
+td.nm{font-weight:600;}
+td.mu{color:var(--muted);}
+td.tr2{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px;}
+.empty-msg{text-align:center;padding:60px;color:var(--muted);font-size:14px;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.bg-green{background:var(--green-bg);color:var(--green);}
+.bg-amber{background:var(--amber-bg);color:var(--amber);}
+.bg-blue{background:var(--blue-bg);color:var(--blue);}
+.bg-red{background:var(--red-bg);color:var(--red);}
+.bg-violet{background:var(--violet-bg);color:var(--violet);}
+.bg-slate{background:var(--slate-bg);color:var(--slate);}
+.detail{width:0;background:white;border-left:1px solid var(--subtle);overflow:hidden;transition:width .2s ease;flex-shrink:0;display:flex;flex-direction:column;}
+.detail.open{width:360px;overflow-y:auto;}
+.di{padding:20px;min-width:360px;}
+.dname{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;line-height:1.2;margin-bottom:7px;}
+.dacts{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+.btn{padding:6px 13px;border-radius:7px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block;}
+.btn-ink{background:var(--ink);color:white;}
+.btn-ghost{background:var(--surface);color:var(--muted);}
+.btn-ghost:hover{color:var(--ink);}
+.btn-green{background:var(--green);color:white;}
+.btn-close{margin-left:auto;background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;padding:2px 5px;line-height:1;}
+.btn-close:hover{color:var(--ink);}
+.divider{border:none;border-top:1px solid var(--subtle);margin:13px 0;}
+.fg{margin-bottom:12px;}
+.fl-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:3px;}
+.fv{font-size:13px;color:var(--ink);line-height:1.5;}
+.fv a{color:var(--blue);text-decoration:none;}
+.fv a:hover{text-decoration:underline;}
+.fv.em{color:#cbd5e1;}
+.fi-input{width:100%;padding:7px 9px;border:1px solid var(--subtle);border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);outline:none;}
+.fi-input:focus{border-color:#94a3b8;}
+textarea.fi-input{height:78px;resize:vertical;}
+select.fi-input{cursor:pointer;}
+.notes-box{background:var(--surface);border-radius:8px;padding:11px;font-size:13px;line-height:1.6;}
+.log-entry{padding:8px 0;border-bottom:1px solid var(--subtle);font-size:12px;}
+.log-entry:last-child{border-bottom:none;}
+.log-who{font-weight:600;}
+.log-when{color:var(--muted);font-size:11px;}
+.log-note{color:var(--slate);margin-top:3px;line-height:1.4;}
+.ov-wrap{flex:1;overflow:auto;padding:22px;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:22px;}
+.sc{background:white;border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-top:3px solid transparent;}
+.sn{font-family:'Playfair Display',serif;font-size:32px;font-weight:800;line-height:1;margin-bottom:4px;}
+.sl{font-size:13px;font-weight:500;color:var(--muted);}
+.ss{font-size:11px;color:#cbd5e1;margin-top:2px;}
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.oc{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.oc.full{grid-column:1/-1;}
+.ot{font-size:14px;font-weight:600;margin-bottom:11px;}
+.or{padding:9px 0;border-bottom:1px solid var(--subtle);cursor:pointer;}
+.or:last-child{border-bottom:none;}
+.or:hover .orn{color:var(--blue);}
+.orn{font-weight:600;font-size:13px;}
+.oro{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4;}
+.stage-chips{display:flex;flex-wrap:wrap;gap:9px;}
+.schip{border-radius:10px;padding:10px 13px;text-align:center;cursor:pointer;transition:transform .1s;min-width:90px;}
+.schip:hover{transform:translateY(-1px);}
+.scn{font-family:'Playfair Display',serif;font-size:24px;font-weight:800;line-height:1;}
+.scl{font-size:11px;font-weight:600;margin-top:2px;}
+.scs{font-size:10px;opacity:.7;}
+.pv-wrap{flex:1;overflow:auto;padding:22px;}
+.p-section{margin-bottom:24px;}
+.p-sec-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
+.p-card{background:white;border-radius:10px;padding:13px 15px;margin-bottom:7px;cursor:pointer;border-left:4px solid transparent;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:all .15s;}
+.p-card:hover{box-shadow:0 3px 8px rgba(0,0,0,.1);transform:translateX(2px);}
+.p-card.urg{border-left-color:#ef4444;}
+.p-card.wrn{border-left-color:#f59e0b;}
+.p-card.vlt{border-left-color:#8b5cf6;}
+.p-card.inf{border-left-color:#3b82f6;}
+.p-name{font-weight:600;font-size:14px;}
+.p-reason{font-size:12px;color:var(--muted);margin-top:2px;}
+.p-meta{font-size:11px;color:#94a3b8;margin-top:1px;}
+.p-acts{display:flex;gap:5px;margin-top:9px;}
+.p-btn{padding:4px 10px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;}
+.p-btn-call{background:#dbeafe;color:#1d4ed8;}
+.p-btn-email{background:#e3f5ee;color:#00875a;}
+.p-btn-log{background:var(--surface);color:var(--muted);}
+.no-pri{text-align:center;padding:60px;color:var(--muted);}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center;}
+.modal{background:white;border-radius:14px;padding:26px;width:460px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;margin-bottom:18px;}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+.form-row{margin-bottom:13px;}
+.form-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:5px;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .2s ease;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🍑 Store<span class="logo-dot">.</span>Manager</div>
+  <nav>
+    <button class="nav-btn active" onclick="switchView('overview',this)">Overview</button>
+    <button class="nav-btn" onclick="switchView('priorities',this)" id="priNavBtn">Today's Priorities <span class="pbadge" id="priCount">0</span></button>
+    <button class="nav-btn" onclick="switchView('accounts',this)">Accounts</button>
+    <button class="nav-btn" onclick="switchView('pipeline',this)">Pipeline</button>
+  </nav>
+  <div class="hright">
+    <button class="sync-btn" onclick="syncSheets()"><div class="sdot" id="sdot"></div><span id="syncLbl">Not connected</span></button>
+    <select class="team-sel" id="teamSel" onchange="setTeam(this.value)">
+      <option value="">👤 Who are you?</option>
+      <option>Founder</option><option>Sales Rep 1</option><option>Sales Rep 2</option><option>Operations</option>
+    </select>
+    <div class="hstat" id="hstatLive"><span id="hLive">—</span> Live</div>
+    <div class="hstat" id="hstatUnpaid"><span id="hUnpaid">—</span> Unpaid</div>
+    <div class="hstat" id="hstatPipeline"><span id="hPipeline">—</span> Pipeline</div>
+  </div>
+</header>
+
+<div class="app-body">
+  <aside class="sidebar" id="sidebar" style="display:none">
+    <div class="sb-sec">
+      <div class="sb-lbl">Search</div>
+      <div class="sw"><input type="text" id="searchInput" placeholder="Name, buyer, area…" oninput="onSearch()"></div>
+    </div>
+    <div class="sb-sec grow">
+      <div class="sb-lbl" id="filterLabel">Status</div>
+      <div class="fl" id="filterList"></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div id="tableView" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+      <div class="toolbar">
+        <div class="ttitle" id="viewTitle">Accounts</div>
+        <button class="btn btn-ink" onclick="openLogModal(null)" id="logBtn" style="display:none;font-size:12px;padding:5px 12px;">+ Log Visit</button>
+      </div>
+      <div class="tw">
+        <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+        <div class="empty-msg" id="emptyMsg" style="display:none">No results found</div>
+      </div>
+    </div>
+    <div id="overviewView" style="display:flex;flex:1;overflow:hidden;"><div class="ov-wrap" id="ovContent"></div></div>
+    <div id="prioritiesView" style="display:none;flex:1;overflow:hidden;"><div class="pv-wrap" id="priContent"></div></div>
+  </div>
+
+  <div class="detail" id="detailPanel"><div class="di" id="detailContent"></div></div>
+</div>
+
+<!-- Log modal -->
+<div class="modal-overlay" id="logModal" style="display:none" onclick="if(event.target===this)closeLog()">
+  <div class="modal">
+    <div class="modal-title">📋 Log Visit / Check-in</div>
+    <div class="form-row"><div class="form-label">Store</div><select class="fi-input" id="logStore"></select></div>
+    <div class="form-row"><div class="form-label">Outcome</div>
+      <select class="fi-input" id="logOutcome">
+        <option value="visited">🏪 Store visit</option><option value="called">📞 Called</option>
+        <option value="emailed">✉️ Emailed</option><option value="order">📦 Order placed</option>
+        <option value="payment">💰 Payment received</option><option value="sample">🎁 Samples dropped</option>
+        <option value="noAnswer">📵 No answer</option>
+      </select>
+    </div>
+    <div class="form-row"><div class="form-label">Notes</div><textarea class="fi-input" id="logNote" placeholder="What happened? Any follow-up needed?"></textarea></div>
+    <div class="form-row"><div class="form-label">Next Follow-up Date (optional)</div><input type="date" class="fi-input" id="logFollowup"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeLog()">Cancel</button>
+      <button class="btn btn-green" onclick="submitLog()">Save Log</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────
+// After Google Apps Script setup, paste your URL here OR it gets stored in localStorage:
+let SHEETS_URL = localStorage.getItem('sheetsUrl') || '';
+let currentTeam = localStorage.getItem('teamMember') || '';
+if (currentTeam) document.getElementById('teamSel').value = currentTeam;
+if (SHEETS_URL) setSyncStatus('ok','Connected');
+
+// ── THRESHOLDS ────────────────────────────────────────────────────────────
+const T = { noContact:14, unpaidDays:7, noReorder:21, pendingDecision:10, visitedNoSale:21 };
+
+// ── SEED DATA ─────────────────────────────────────────────────────────────
+const A_SEED = [
+  {id:1,name:"Arlo Hotel (Bodega)",status:"In Discussion",location:"231 Hudson Street, NY",buyer:"Anthony",email:"Anthony@renwicknyc.com",phone:"",initialOrder:null,lastOrder:null,channel:"Faire",payment:"",paid:false,notes:"Dropped 3 samples each. Plans to buy via Faire.",lastCheckin:null,followupDate:null},
+  {id:2,name:"Heavenly Market",status:"Live",location:"1692 York Ave, NY 10162",buyer:"Adel",email:"",phone:"9172385734",initialOrder:"2026-01-19",lastOrder:null,channel:"Direct",payment:"Cash",paid:true,notes:"Paid. Check in when nearing 4-6 weeks.",lastCheckin:"2026-01-19",followupDate:null},
+  {id:3,name:"Lifethyme Organics",status:"Live",location:"410 Sixth Avenue, NY",buyer:"Joe",email:"joep@lifethymemarket.com",phone:"",initialOrder:"2026-01-16",lastOrder:"2026-02-26",channel:"Direct",payment:"ACH",paid:false,notes:"Net14 terms. 2 invoices sent. Follow up on payment.",lastCheckin:"2026-02-26",followupDate:null},
+  {id:4,name:"Orchard Grocer",status:"Live",location:"78 Orchard St, NY 10002",buyer:"Sara",email:"eat@orchardgrocer.com",phone:"646-757-9910",initialOrder:"2026-01-27",lastOrder:null,channel:"Faire",payment:"Faire",paid:true,notes:"Cherry sold out. Will reorder through Faire.",lastCheckin:"2026-03-04",followupDate:null},
+  {id:5,name:"Upstate Stock",status:"Live",location:"2 Berry Street, Brooklyn",buyer:"Bram",email:"",phone:"347-330-3002",initialOrder:"2026-01-28",lastOrder:null,channel:"Faire",payment:"Faire",paid:true,notes:"Online only.",lastCheckin:"2026-01-28",followupDate:null},
+  {id:6,name:"Pop Up Grocer",status:"Live",location:"205 Bleecker, NY",buyer:"Nicole",email:"nicole@popupgrocer.com",phone:"",initialOrder:null,lastOrder:null,channel:"Direct",payment:"Direct",paid:false,notes:"Check velocity and reorder readiness.",lastCheckin:null,followupDate:null},
+  {id:7,name:"The Shelf",status:"Live",location:"173 Elizabeth Street, NY",buyer:"Sloane",email:"",phone:"",initialOrder:null,lastOrder:null,channel:"Direct",payment:"Direct",paid:false,notes:"12 cherry + 12 peach on shelf.",lastCheckin:null,followupDate:null},
+  {id:8,name:"Dumbo Market",status:"Live",location:"205 Smith St, Brooklyn",buyer:"Sam",email:"dumbomarketsmith@gmail.com",phone:"718-722-2920",initialOrder:"2026-02-03",lastOrder:"2026-02-24",channel:"Direct",payment:"ACH",paid:false,notes:"Cherry sold 9 in 1 week! Peach slower. Great velocity — check in soon.",lastCheckin:"2026-02-24",followupDate:null},
+  {id:9,name:"Dépanneur",status:"Live",location:"242 Wythe Ave, Brooklyn 11249",buyer:"Melody",email:"meloday@depanneur.com",phone:"718-989-1022",initialOrder:"2026-02-03",lastOrder:"2026-02-24",channel:"Faire",payment:"Faire",paid:true,notes:"Pay via ACH. Scheduled demo. Rush hour = lunch.",lastCheckin:"2026-02-24",followupDate:null},
+  {id:10,name:"Brooklyn Fare",status:"Live",location:"200 Schermerhorn St 11201",buyer:"Felipe",email:"felipe.t@guzmancorp.net",phone:"718-243-0051",initialOrder:"2026-02-04",lastOrder:"2026-02-04",channel:"Direct",payment:"ACH",paid:false,notes:"Won't pay shipping. BOGO deal. Invoice sent.",lastCheckin:"2026-03-04",followupDate:null},
+  {id:11,name:"Last Minute Market",status:"Live",location:"102 Walnut St, Montclair NJ",buyer:"Lindsey",email:"lindsey@lastminutemarket.com",phone:"",initialOrder:"2026-02-05",lastOrder:"2026-02-05",channel:"Faire",payment:"Faire",paid:true,notes:"Missing buyer name & email — get contact info ASAP.",lastCheckin:"2026-03-04",followupDate:null},
+  {id:12,name:"Greenwich Cafe",status:"Live",location:"58 Greenwich Ave 10011",buyer:"Mohammed",email:"",phone:"",initialOrder:"2026-01-17",lastOrder:null,channel:"Direct",payment:"Cash",paid:true,notes:"Trial store. Follow up to convert to Live.",lastCheckin:"2026-01-17",followupDate:null},
+  {id:13,name:"Westside Market (84)",status:"Live",location:"84 Third Avenue, NY",buyer:"Ali",email:"Bigxela@gmail.com",phone:"347-282-6899",initialOrder:"2026-01-29",lastOrder:"2026-02-13",channel:"Direct",payment:"ACH",paid:false,notes:"Invoice #1013 sent. Follow up on payment & reorder.",lastCheckin:"2026-03-04",followupDate:null},
+  {id:14,name:"Westside Market (23)",status:"Live",location:"170 W 23rd St, Chelsea",buyer:"Chris/Mike",email:"wsm23ft@gmail.com",phone:"212-627-6160",initialOrder:"2026-01-29",lastOrder:"2026-02-25",channel:"Direct",payment:"ACH",paid:false,notes:"Free fill. Need to convert to paid reorder.",lastCheckin:"2026-02-25",followupDate:null},
+  {id:15,name:"Westside Market (180)",status:"Live",location:"180 Third Ave, Gramercy",buyer:"Carlos",email:"wsm180@wmarketnyc.com",phone:"212-254-0017",initialOrder:"2026-01-29",lastOrder:null,channel:"Direct",payment:"ACH",paid:false,notes:"Cherry 2, Peach 4 left. Check in by next week.",lastCheckin:"2026-03-04",followupDate:null},
+  {id:16,name:"Westside Market (2840)",status:"Trial",location:"2840 Broadway, NY",buyer:"Nico",email:"catering110@wmarketnyc.com",phone:"212-222-3367",initialOrder:"2026-01-29",lastOrder:"2026-02-17",channel:"Direct",payment:"ACH",paid:false,notes:"Cheque - airgoods going forward.",lastCheckin:"2026-03-04",followupDate:null},
+  {id:17,name:"Westside Market (2589)",status:"Live",location:"2589 Broadway",buyer:"Efran",email:"",phone:"2123160222",initialOrder:"2026-01-29",lastOrder:"2026-02-21",channel:"Direct",payment:"ACH",paid:false,notes:"",lastCheckin:"2026-02-21",followupDate:null},
+  {id:18,name:"Westside Market (1407)",status:"Trial",location:"1407 Lexington Ave",buyer:"Fernando",email:"wm1407@wmarketnyc.com",phone:"212-348-2382",initialOrder:"2026-01-29",lastOrder:null,channel:"Direct",payment:"ACH",paid:false,notes:"Call back after 5.",lastCheckin:"2026-03-04",followupDate:null},
+  {id:19,name:"Westside Market (77)",status:"Live",location:"77 Seventh Avenue, NY",buyer:"Anu",email:"westsidem77@gmail.com",phone:"212-807-7771",initialOrder:"2026-01-29",lastOrder:"2026-02-26",channel:"Direct",payment:"ACH",paid:false,notes:"Wants 50% margin. 4 cherry + 1 peach sold. Call after 1pm.",lastCheckin:"2026-02-26",followupDate:null},
+  {id:20,name:"Corner Grocers",status:"Live",location:"140 Orchard St, NY 10002",buyer:"Raj",email:"cornergrocers@gmail.com",phone:"347-495-0579",initialOrder:"2026-02-13",lastOrder:null,channel:"Direct",payment:"Cheque",paid:true,notes:"Invoice #1012 sent.",lastCheckin:"2026-03-04",followupDate:null},
+  {id:21,name:"West 4th Marketplace",status:"Live",location:"361 6th Ave, NY 10014",buyer:"Abdul",email:"",phone:"646-767-0022",initialOrder:"2026-02-17",lastOrder:null,channel:"Direct",payment:"",paid:false,notes:"",lastCheckin:"2026-02-17",followupDate:null},
+  {id:22,name:"Heavenly (44 E 8th)",status:"Live",location:"44 E 8th Street",buyer:"Omar",email:"",phone:"",initialOrder:"2026-02-26",lastOrder:null,channel:"Direct",payment:"",paid:false,notes:"BOGO order.",lastCheckin:"2026-02-26",followupDate:null},
+  {id:23,name:"Heavenly (Sullivan)",status:"Live",location:"240 Sullivan",buyer:"Omar",email:"",phone:"",initialOrder:"2026-02-26",lastOrder:null,channel:"Direct",payment:"",paid:false,notes:"BOGO order.",lastCheckin:"2026-02-26",followupDate:null},
+  {id:24,name:"Heavenly (58 Carmine)",status:"Live",location:"58 Carmine",buyer:"Omar",email:"",phone:"",initialOrder:"2026-02-26",lastOrder:null,channel:"Direct",payment:"",paid:false,notes:"BOGO order.",lastCheckin:"2026-02-26",followupDate:null},
+  {id:25,name:"Elm Wellness",status:"Live",location:"56 Seventh Ave, NY 10011",buyer:"",email:"elmhealthnyc@gmail.com",phone:"212-255-6300",initialOrder:"2026-02-17",lastOrder:null,channel:"Direct",payment:"",paid:false,notes:"",lastCheckin:"2026-02-17",followupDate:null},
+];
+const P_SEED = [
+  {id:1,name:"Gourmet Garage",stage:"2-Emailed",channel:"Chain",area:"LM",buyer:"Fedele",email:"gourmetgaragecateringvsm@gmail.com",phone:"8434330418",stores:3,dateVisited:"2025-11-07",notes:"Told to text Fedele",followupDate:null},
+  {id:2,name:"Happier Grocer",stage:"3-In Discussions",channel:"Independent",area:"LM",buyer:"Liz",email:"E.christ@happier.nyc",phone:"212-837-8015",stores:1,dateVisited:"2025-11-07",notes:"Dropped samples w Maggie, email Liz",followupDate:null},
+  {id:3,name:"Brooklyn Fare Grocery",stage:"2-Emailed",channel:"Chain",area:"LM",buyer:"Didi",email:"",phone:"212-706-0623",stores:5,dateVisited:"2025-11-06",notes:"Email Didi. He mentioned Smart Sweets velocity.",followupDate:null},
+  {id:4,name:"Westside Market (all)",stage:"2-Contacted",channel:"Chain",area:"LM",buyer:"Anu",email:"",phone:"212-253-8400",stores:7,dateVisited:"2025-11-06",notes:"Bring samples. 7 stores. Need more than 1 SKU.",followupDate:null},
+  {id:5,name:"Bonberi Mart",stage:"2-Emailed",channel:"Independent",area:"LM",buyer:"",email:"zoe@bonberi.com",phone:"917-388-3537",stores:1,dateVisited:"2025-11-06",notes:"",followupDate:null},
+  {id:6,name:"The Elk",stage:"2-Emailed",channel:"Independent",area:"LM",buyer:"Claire",email:"hello@theelknyc.com",phone:"212-933-4780",stores:2,dateVisited:"2026-01-14",notes:"Dropped off samples w Claire",followupDate:null},
+  {id:7,name:"Village Organic Convenience",stage:"5-Pending Decision",channel:"Independent",area:"LM",buyer:"",email:"",phone:"",stores:1,dateVisited:"2026-01-14",notes:"Wants to buy 1 box each. Drop off needed.",followupDate:null},
+  {id:8,name:"M&O Market",stage:"5-Pending Decision",channel:"Independent",area:"LM",buyer:"",email:"",phone:"",stores:1,dateVisited:"2026-01-14",notes:"Drop 1 box each. If does well will rebuy.",followupDate:null},
+  {id:9,name:"Fontys Bodega",stage:"2-Contacted",channel:"Independent",area:"LM",buyer:"",email:"",phone:"",stores:1,dateVisited:"2025-11-06",notes:"Brand new, WV vibes. Be on FAIRE.",followupDate:null},
+  {id:10,name:"Clean Market",stage:"2-Emailed",channel:"Specialty",area:"LM",buyer:"",email:"care@cleanmarket.com",phone:"646-609-1701",stores:2,dateVisited:"2025-11-06",notes:"Follow up over email, got business card",followupDate:null},
+  {id:11,name:"D'Agostino + Gristedes",stage:"2-Called/Texted",channel:"Chain",area:"LM",buyer:"Carlos Ferez",email:"",phone:"212-484-5720",stores:10,dateVisited:"2025-11-07",notes:"Carlos Ferez – Head of Grocery",followupDate:null},
+  {id:12,name:"Agate e Valentina",stage:"3-In Discussions",channel:"Chain",area:"UES",buyer:"Kim",email:"",phone:"212-452-0690",stores:2,dateVisited:"2025-11-18",notes:"Like gluten free. In contact with Kim.",followupDate:null},
+  {id:13,name:"Butterfield Market",stage:"3-In Discussions",channel:"Chain",area:"UES",buyer:"Sara",email:"sara@butterfieldmarket.com",phone:"212-288-7800",stores:1,dateVisited:"2025-11-18",notes:"Sara is buyer. Focus on women-owned, NYC-based, vegan.",followupDate:null},
+  {id:14,name:"A Matter of Health",stage:"3-In Discussions",channel:"Independent",area:"UES",buyer:"Pema",email:"hba72@amatterofhealthinc.com",phone:"",stores:1,dateVisited:"2025-11-18",notes:"Blobs doing best. 40% margin. No free fill needed.",followupDate:null},
+  {id:15,name:"Citarella",stage:"2-Contacted",channel:"Chain",area:"LM",buyer:"UNFI",email:"help@citeralla.com",phone:"212-874-0383",stores:8,dateVisited:"",notes:"Can't get in unless through distributor",followupDate:null},
+  {id:16,name:"Fairway Market",stage:"1-No Contact",channel:"Chain",area:"Multiple",buyer:"",email:"support@fairwaymarket.com",phone:"888-521-1824",stores:3,dateVisited:"",notes:"TBD",followupDate:null},
+  {id:17,name:"Solidcore Soho",stage:"3-In Discussions",channel:"Specialty",area:"LM",buyer:"Partnerships",email:"soho@solidcore.co",phone:"",stores:1,dateVisited:"",notes:"Local partnerships opportunity",followupDate:null},
+  {id:18,name:"Mulberry Market",stage:"7-Closed Lost",channel:"Independent",area:"LM",buyer:"",email:"",phone:"212-226-1777",stores:1,dateVisited:"2025-11-06",notes:"Free fill gave bad shelf placement.",followupDate:null},
+  {id:19,name:"Sunlife Organic",stage:"7-Closed Lost",channel:"Independent",area:"",buyer:"Clarissa",email:"Clarissa@teamwolverine.com",phone:"",stores:1,dateVisited:"2025-11-07",notes:"Want something new on shelves.",followupDate:null},
+  {id:20,name:"Jubilee Market Place",stage:"1-No Contact",channel:"Independent",area:"LM",buyer:"",email:"",phone:"",stores:1,dateVisited:"",notes:"Saw Sourmilk Girls there",followupDate:null},
+  {id:21,name:"New York Pilates",stage:"1-No Contact",channel:"Specialty",area:"LM",buyer:"",email:"",phone:"",stores:7,dateVisited:"",notes:"Boutique fitness opportunity?",followupDate:null},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let accts = JSON.parse(localStorage.getItem('sm_accts')||'null') || JSON.parse(JSON.stringify(A_SEED));
+let prspcts = JSON.parse(localStorage.getItem('sm_prspcts')||'null') || JSON.parse(JSON.stringify(P_SEED));
+let logs = JSON.parse(localStorage.getItem('sm_logs')||'[]');
+let view='overview', filter='All', search='', sel=null, editing=false;
+
+const SC = {"1-No Contact":{c:"bg-slate",l:"No Contact"},"2-Emailed":{c:"bg-blue",l:"Emailed"},"2-Contacted":{c:"bg-blue",l:"Contacted"},"2-Called/Texted":{c:"bg-blue",l:"Called"},"3-In Discussions":{c:"bg-amber",l:"In Discussions"},"5-Pending Decision":{c:"bg-violet",l:"Pending Decision"},"6-Closed Won":{c:"bg-green",l:"Closed Won"},"7-Closed Lost":{c:"bg-red",l:"Closed Lost"}};
+const STC = {"Live":{c:"bg-green",l:"Live"},"Trial":{c:"bg-amber",l:"Trial"},"In Discussion":{c:"bg-blue",l:"In Discussion"}};
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+const save=()=>{localStorage.setItem('sm_accts',JSON.stringify(accts));localStorage.setItem('sm_prspcts',JSON.stringify(prspcts));localStorage.setItem('sm_logs',JSON.stringify(logs));};
+const esc=s=>s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'';
+const bdg=(t,c)=>c?`<span class="badge ${c.c}">${c.l||t}</span>`:`<span class="badge bg-slate">${t}</span>`;
+const dSince=d=>{if(!d)return null;const x=new Date(d);if(isNaN(x))return null;return Math.floor((Date.now()-x)/86400000);};
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtD=s=>{if(!s)return'—';try{return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});}catch{return s;}};
+
+// ── SYNC ──────────────────────────────────────────────────────────────────
+function setSyncStatus(st,lbl){document.getElementById('sdot').className='sdot '+st;document.getElementById('syncLbl').textContent=lbl;}
+function setTeam(v){currentTeam=v;localStorage.setItem('teamMember',v);}
+async function syncSheets(){
+  if(!SHEETS_URL){const u=prompt('Paste your Google Apps Script Web App URL:\n\n(See the setup guide below for instructions)');if(!u)return;SHEETS_URL=u.trim();localStorage.setItem('sheetsUrl',SHEETS_URL);}
+  setSyncStatus('busy','Syncing…');
+  try{
+    const res=await fetch(SHEETS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accts,prspcts,logs})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const d=await res.json();
+    if(d.accts){accts=d.accts;prspcts=d.prspcts||prspcts;save();}
+    setSyncStatus('ok','Synced '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+    updateStats();rerender();
+  }catch(e){setSyncStatus('err','Sync failed');console.error(e);}
+}
+
+// ── PRIORITIES ────────────────────────────────────────────────────────────
+function getPriorities(){
+  const items=[];
+  accts.forEach(a=>{
+    if(!a.paid&&a.initialOrder){const d=dSince(a.initialOrder);if(d!==null&&d>=T.unpaidDays)items.push({urg:'urg',icon:'💸',title:a.name,reason:`Invoice unpaid for ${d} days`,meta:`${a.buyer||'—'} · ${a.payment||'—'}`,email:a.email,phone:a.phone,id:a.id,type:'account'});}
+    if(a.lastCheckin){const d=dSince(a.lastCheckin);if(d!==null&&d>=T.noContact&&a.status!=='In Discussion')items.push({urg:'wrn',icon:'📵',title:a.name,reason:`No contact in ${d} days`,meta:`Last: ${fmtD(a.lastCheckin)}`,email:a.email,phone:a.phone,id:a.id,type:'account'});}
+    else if(a.status==='Live')items.push({urg:'wrn',icon:'📵',title:a.name,reason:'Never contacted since going Live',meta:'Add a check-in',email:a.email,phone:a.phone,id:a.id,type:'account'});
+    if(a.lastOrder){const d=dSince(a.lastOrder);if(d!==null&&d>=T.noReorder)items.push({urg:'inf',icon:'📦',title:a.name,reason:`Last order ${d} days ago — check reorder`,meta:`Order: ${fmtD(a.lastOrder)}`,email:a.email,phone:a.phone,id:a.id,type:'account'});}
+    if(a.status==='In Discussion'&&!a.initialOrder&&a.lastCheckin){const d=dSince(a.lastCheckin);if(d!==null&&d>=T.visitedNoSale)items.push({urg:'inf',icon:'🏪',title:a.name,reason:`Visited ${d} days ago — no sale yet`,meta:'Push to convert',email:a.email,phone:a.phone,id:a.id,type:'account'});}
+  });
+  prspcts.forEach(p=>{
+    if(p.stage==='5-Pending Decision'&&p.dateVisited){const d=dSince(p.dateVisited);if(d!==null&&d>=T.pendingDecision)items.push({urg:'vlt',icon:'⏳',title:p.name,reason:`Pending decision for ${d} days`,meta:`${p.area||'—'} · ${p.stores||1} location(s)`,email:p.email,phone:p.phone,id:p.id,type:'prospect'});}
+    if(p.stage==='3-In Discussions'&&p.dateVisited){const d=dSince(p.dateVisited);if(d!==null&&d>=T.noContact)items.push({urg:'wrn',icon:'💬',title:p.name,reason:`In discussions for ${d} days`,meta:`${p.buyer||'—'} · ${p.stores||1} location(s)`,email:p.email,phone:p.phone,id:p.id,type:'prospect'});}
+    if(p.followupDate&&p.followupDate<=today())items.push({urg:'urg',icon:'📅',title:p.name,reason:`Follow-up due: ${fmtD(p.followupDate)}`,meta:SC[p.stage]?.l||p.stage,email:p.email,phone:p.phone,id:p.id,type:'prospect'});
+  });
+  const ord={urg:0,wrn:1,vlt:2,inf:3};
+  return items.sort((a,b)=>(ord[a.urg]||9)-(ord[b.urg]||9));
+}
+
+function renderPriorities(){
+  const items=getPriorities();
+  document.getElementById('priCount').textContent=items.length;
+  const w=document.getElementById('priContent');
+  if(!items.length){w.innerHTML=`<div class="no-pri"><div style="font-size:44px;margin-bottom:10px">🎉</div><div style="font-size:18px;font-weight:600;margin-bottom:6px">All caught up!</div><div>No follow-ups needed right now.</div></div>`;return;}
+  const grps={urg:[],wrn:[],vlt:[],inf:[]};
+  items.forEach(i=>(grps[i.urg]||grps.inf).push(i));
+  const secs=[{k:'urg',l:'🔴 Urgent — Do Today',c:'urg'},{k:'wrn',l:'🟡 Overdue Follow-ups',c:'wrn'},{k:'vlt',l:'🟣 Stalled Decisions',c:'vlt'},{k:'inf',l:'🔵 Reorder Checks',c:'inf'}];
+  w.innerHTML=`<div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:800;margin-bottom:4px">Today's Priorities</div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:22px">${items.length} item${items.length!==1?'s':''} need attention · ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+  ${secs.filter(s=>grps[s.k].length).map(s=>`<div class="p-section"><div class="p-sec-title">${s.l}</div>${grps[s.k].map(i=>`
+    <div class="p-card ${s.c}" onclick="goItem(${i.id},'${i.type}')">
+      <div class="p-name">${i.icon} ${esc(i.title)}</div>
+      <div class="p-reason">${esc(i.reason)}</div>
+      <div class="p-meta">${esc(i.meta)}</div>
+      <div class="p-acts">
+        ${i.phone?`<a class="p-btn p-btn-call" href="tel:${esc(i.phone)}" onclick="event.stopPropagation()">📞 Call</a>`:''}
+        ${i.email?`<a class="p-btn p-btn-email" href="mailto:${esc(i.email)}" onclick="event.stopPropagation()">✉️ Email</a>`:''}
+        <button class="p-btn p-btn-log" onclick="event.stopPropagation();openLogFor(${i.id},'${i.type}')">✅ Log Update</button>
+      </div>
+    </div>`).join('')}</div>`).join('')}`;
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────
+function renderOverview(){
+  const live=accts.filter(a=>a.status==='Live').length;
+  const unpaid=accts.filter(a=>!a.paid&&(a.status==='Live'||a.status==='Trial')).length;
+  const active=prspcts.filter(p=>!['7-Closed Lost','6-Closed Won'].includes(p.stage)).length;
+  const won=prspcts.filter(p=>p.stage==='6-Closed Won').length;
+  const pris=getPriorities();
+  const actions=accts.filter(a=>a.notes&&/follow up|check in|invoice|payment|reorder|get contact/i.test(a.notes));
+  const checkins=accts.filter(a=>a.lastCheckin).sort((a,b)=>b.lastCheckin.localeCompare(a.lastCheckin)).slice(0,6);
+  const stageBk=Object.entries(SC).map(([s,c])=>{
+    const cnt=prspcts.filter(p=>p.stage===s).length;
+    const sts=prspcts.filter(p=>p.stage===s).reduce((n,p)=>n+(p.stores||0),0);
+    const cols={'bg-green':'#00875a','bg-amber':'#b45309','bg-blue':'#1d4ed8','bg-red':'#b91c1c','bg-violet':'#6d28d9','bg-slate':'#475569'};
+    const bgs={'bg-green':'#e3f5ee','bg-amber':'#fef3c7','bg-blue':'#dbeafe','bg-red':'#fee2e2','bg-violet':'#ede9fe','bg-slate':'#f1f5f9'};
+    const cc=cols[c.c],bg=bgs[c.c];
+    return `<div class="schip" style="background:${bg}" onclick="goPipeline('${s}')"><div class="scn" style="color:${cc}">${cnt}</div><div class="scl" style="color:${cc}">${c.l}</div>${sts?`<div class="scs" style="color:${cc}">${sts} locs</div>`:''}</div>`;
+  }).join('');
+  document.getElementById('ovContent').innerHTML=`<div class="fade-in">
+    <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:800;margin-bottom:18px">Q1 2026 Overview</div>
+    <div class="stat-grid">
+      <div class="sc" style="border-top-color:#00875a"><div class="sn" style="color:#00875a">${live}</div><div class="sl">Live Accounts</div><div class="ss">Active partners</div></div>
+      <div class="sc" style="border-top-color:#b91c1c;cursor:pointer" onclick="switchView('priorities',document.querySelectorAll('.nav-btn')[1])"><div class="sn" style="color:#b91c1c">${pris.length}</div><div class="sl">Need Attention</div><div class="ss">Click to see →</div></div>
+      <div class="sc" style="border-top-color:#1d4ed8"><div class="sn" style="color:#1d4ed8">${active}</div><div class="sl">Active Prospects</div><div class="ss">In pipeline</div></div>
+      <div class="sc" style="border-top-color:#6d28d9"><div class="sn" style="color:#6d28d9">${won}</div><div class="sl">Closed Won</div><div class="ss">This quarter</div></div>
+    </div>
+    <div class="ov-grid">
+      <div class="oc"><div class="ot">🔔 Action Items</div>${actions.slice(0,7).map(a=>`<div class="or" onclick="goItem(${a.id},'account')"><div style="display:flex;justify-content:space-between;align-items:center"><div class="orn">${esc(a.name)}</div>${bdg(a.status,STC[a.status])}</div><div class="oro">${esc(a.notes)}</div></div>`).join('')}</div>
+      <div class="oc"><div class="ot">📋 Recent Check-ins</div>${checkins.map(a=>`<div class="or" onclick="goItem(${a.id},'account')"><div style="display:flex;justify-content:space-between"><div class="orn">${esc(a.name)}</div><span style="font-size:11px;color:#94a3b8">${fmtD(a.lastCheckin)}</span></div><div class="oro">${esc(a.buyer||'No buyer set')}</div></div>`).join('')||'<div style="color:#cbd5e1;font-size:13px">No check-ins yet</div>'}</div>
+      <div class="oc full"><div class="ot">📊 Pipeline by Stage</div><div class="stage-chips">${stageBk}</div></div>
+    </div>
+  </div>`;
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────
+function renderAcctFilters(){
+  document.getElementById('filterLabel').textContent='Status';
+  document.getElementById('filterList').innerHTML=['All','Live','Trial','In Discussion'].map(s=>{
+    const cnt=s==='All'?accts.length:accts.filter(a=>a.status===s).length;
+    return `<div class="fi ${filter===s?'active':''}" onclick="setFilter('${s}')">${s}<span class="fc">${cnt}</span></div>`;
+  }).join('');
+}
+function renderPrspctFilters(){
+  document.getElementById('filterLabel').textContent='Stage';
+  document.getElementById('filterList').innerHTML=['All',...Object.keys(SC)].map(s=>{
+    const lbl=s==='All'?'All':SC[s].l;
+    const cnt=s==='All'?prspcts.length:prspcts.filter(p=>p.stage===s).length;
+    return `<div class="fi ${filter===s?'active':''}" onclick="setFilter('${s}')">${lbl}<span class="fc">${cnt}</span></div>`;
+  }).join('');
+}
+function setFilter(f){filter=f;sel=null;document.getElementById('detailPanel').classList.remove('open');view==='accounts'?(renderAcctFilters(),renderAcctTable()):(renderPrspctFilters(),renderPrspctTable());}
+function onSearch(){search=document.getElementById('searchInput').value.toLowerCase();view==='accounts'?renderAcctTable():renderPrspctTable();}
+
+// ── TABLES ────────────────────────────────────────────────────────────────
+function renderAcctTable(){
+  document.getElementById('viewTitle').innerHTML=`Accounts <span class="cpill">${accts.filter(a=>filter==='All'||a.status===filter).length}</span>`;
+  document.getElementById('logBtn').style.display='block';
+  document.getElementById('thead').innerHTML=`<tr>${['Store','Buyer','Status','Initial Order','Last Order','Payment','Paid','Last Contact'].map(c=>`<th>${c}</th>`).join('')}</tr>`;
+  const rows=accts.filter(a=>{
+    const ms=!search||[a.name,a.buyer,a.location].some(v=>(v||'').toLowerCase().includes(search));
+    return ms&&(filter==='All'||a.status===filter);
+  });
+  document.getElementById('emptyMsg').style.display=rows.length?'none':'block';
+  document.getElementById('tbody').innerHTML=rows.map(a=>{
+    const ds=a.lastCheckin?dSince(a.lastCheckin):null;
+    const warn=ds!==null&&ds>=T.noContact;
+    return `<tr onclick="selAcct(${a.id})" class="${sel?.id===a.id&&sel?._t==='acct'?'sel':''}">
+      <td class="nm">${esc(a.name)}</td><td class="mu">${esc(a.buyer)||'—'}</td>
+      <td>${bdg(a.status,STC[a.status])}</td>
+      <td class="mu">${fmtD(a.initialOrder)}</td><td class="mu">${fmtD(a.lastOrder)}</td>
+      <td class="mu">${esc(a.payment)||'—'}</td>
+      <td>${a.paid?'✅':a.payment?'⏳':'—'}</td>
+      <td style="${warn?'color:#b91c1c;font-weight:600':'color:var(--muted)'}">${a.lastCheckin?fmtD(a.lastCheckin)+' ('+ds+'d)':'—'}</td>
+    </tr>`;
+  }).join('');
+}
+function renderPrspctTable(){
+  document.getElementById('viewTitle').innerHTML=`Pipeline <span class="cpill">${prspcts.filter(p=>filter==='All'||p.stage===filter).length}</span>`;
+  document.getElementById('logBtn').style.display='none';
+  document.getElementById('thead').innerHTML=`<tr>${['Store','Stage','Channel','Area','Buyer','Locs','Last Visit','Notes'].map(c=>`<th>${c}</th>`).join('')}</tr>`;
+  const rows=prspcts.filter(p=>{
+    const ms=!search||[p.name,p.buyer,p.area,p.channel].some(v=>(v||'').toLowerCase().includes(search));
+    return ms&&(filter==='All'||p.stage===filter);
+  });
+  document.getElementById('emptyMsg').style.display=rows.length?'none':'block';
+  document.getElementById('tbody').innerHTML=rows.map(p=>`<tr onclick="selPrspct(${p.id})" class="${sel?.id===p.id&&sel?._t==='prspct'?'sel':''}">
+    <td class="nm">${esc(p.name)}</td><td>${bdg(p.stage,SC[p.stage])}</td>
+    <td class="mu">${esc(p.channel)}</td><td class="mu">${esc(p.area)||'—'}</td>
+    <td class="mu">${esc(p.buyer)||'—'}</td><td class="mu" style="text-align:center">${p.stores||'—'}</td>
+    <td class="mu">${fmtD(p.dateVisited)}</td><td class="tr2">${esc(p.notes)||'—'}</td>
+  </tr>`).join('');
+}
+
+// ── SELECT ────────────────────────────────────────────────────────────────
+function selAcct(id){sel={...accts.find(a=>a.id===id),_t:'acct'};editing=false;renderDetail();renderAcctTable();}
+function selPrspct(id){sel={...prspcts.find(p=>p.id===id),_t:'prspct'};editing=false;renderDetail();renderPrspctTable();}
+
+// ── DETAIL ────────────────────────────────────────────────────────────────
+function renderDetail(){
+  document.getElementById('detailPanel').classList.add('open');
+  const s=sel,isA=s._t==='acct';
+  const slogs=logs.filter(l=>l.sid===s.id&&l.st===s._t).slice(-5).reverse();
+  const oE={visited:'🏪',called:'📞',emailed:'✉️',order:'📦',payment:'💰',sample:'🎁',noAnswer:'📵'};
+  document.getElementById('detailContent').innerHTML=`<div class="fade-in">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="flex:1;padding-right:8px">
+        ${editing?`<input class="fi-input" id="e_name" value="${esc(s.name)}" style="font-size:17px;font-weight:700;margin-bottom:8px">`:`<div class="dname">${esc(s.name)}</div>`}
+        ${editing?(isA?`<select class="fi-input" id="e_status" style="width:auto"><option>Live</option><option>Trial</option><option>In Discussion</option></select>`:`<select class="fi-input" id="e_stage" style="width:auto">${Object.keys(SC).map(k=>`<option>${k}</option>`).join('')}</select>`):(isA?bdg(s.status,STC[s.status]):bdg(s.stage,SC[s.stage]))}
+      </div>
+      <button class="btn-close" onclick="closeDetail()">×</button>
+    </div>
+    <div class="dacts">
+      ${editing?`<button class="btn btn-green" onclick="saveEdit()">Save</button><button class="btn btn-ghost" onclick="cancelEdit()">Cancel</button>`
+        :`<button class="btn btn-ink" onclick="startEdit()">Edit</button>
+          <button class="btn btn-ghost" onclick="openLogFor(${s.id},'${s._t}')">+ Log</button>
+          ${s.email?`<a class="btn btn-ghost" href="mailto:${esc(s.email)}" style="text-decoration:none">✉️</a>`:''}
+          ${s.phone?`<a class="btn btn-ghost" href="tel:${esc(s.phone)}" style="text-decoration:none">📞</a>`:''}`}
+    </div>
+    <hr class="divider">
+    ${fg('📍 Location',s.location,'e_location')}
+    ${fg('👤 Buyer',s.buyer,'e_buyer')}
+    ${fgl('✉️ Email',s.email,'e_email','mailto:')}
+    ${fg('📞 Phone',s.phone,'e_phone')}
+    ${isA?`${fg('📦 Initial Order',s.initialOrder,'e_initialOrder',true)}${fg('🔄 Last Order',s.lastOrder,'e_lastOrder',true)}${fg('💳 Payment',s.payment,'e_payment')}${fg('🔁 Channel',s.channel,'e_channel')}
+    <div class="fg"><div class="fl-lbl">💰 Paid</div>${editing?`<select class="fi-input" id="e_paid" style="width:auto"><option value="true">✅ Yes</option><option value="false">⏳ No</option></select>`:`<div class="fv">${s.paid?'✅ Yes':'⏳ Pending'}</div>`}</div>
+    ${fg('📅 Last Check-in',s.lastCheckin,'e_lastCheckin',true)}${fg('⏰ Follow-up',s.followupDate,'e_followupDate',true)}`
+    :`${fg('🏪 Channel',s.channel,'e_channel')}${fg('🗺️ Area',s.area,'e_area')}${fg('🏬 Locations',s.stores,'e_stores')}${fg('📅 Date Visited',s.dateVisited,'e_dateVisited',true)}${fg('⏰ Follow-up',s.followupDate,'e_followupDate',true)}`}
+    <div class="fg"><div class="fl-lbl">📋 Notes</div>${editing?`<textarea class="fi-input" id="e_notes">${esc(s.notes||'')}</textarea>`:`<div class="notes-box ${!s.notes?'fv em':''}">${esc(s.notes)||'No notes'}</div>`}</div>
+    ${slogs.length?`<hr class="divider"><div class="fl-lbl" style="margin-bottom:6px">🕐 Activity Log</div>${slogs.map(l=>`<div class="log-entry"><div style="display:flex;justify-content:space-between"><span class="log-who">${esc(l.who||'Team')}</span><span class="log-when">${fmtD(l.date)}</span></div><span class="badge bg-slate" style="margin-top:3px;font-size:10px">${oE[l.outcome]||'📝'} ${esc(l.outcome)}</span><div class="log-note">${esc(l.note)}</div></div>`).join('')}`:''}
+  </div>`;
+  if(editing){
+    if(isA){document.getElementById('e_status').value=s.status;document.getElementById('e_paid').value=String(s.paid);}
+    else document.getElementById('e_stage').value=s.stage;
+  }
+}
+const fg=(lbl,val,id,isDate=false)=>editing?`<div class="fg"><div class="fl-lbl">${lbl}</div><input type="${isDate?'date':'text'}" class="fi-input" id="${id}" value="${esc(val||'')}"></div>`:`<div class="fg"><div class="fl-lbl">${lbl}</div><div class="fv ${!val?'em':''}">${esc(val)||'—'}</div></div>`;
+const fgl=(lbl,val,id,pfx)=>editing?`<div class="fg"><div class="fl-lbl">${lbl}</div><input class="fi-input" id="${id}" value="${esc(val||'')}"></div>`:`<div class="fg"><div class="fl-lbl">${lbl}</div><div class="fv ${!val?'em':''}">${val?`<a href="${pfx}${esc(val)}">${esc(val)}</a>`:'—'}</div></div>`;
+const startEdit=()=>{editing=true;renderDetail();};
+const cancelEdit=()=>{editing=false;renderDetail();};
+const closeDetail=()=>{sel=null;document.getElementById('detailPanel').classList.remove('open');rerender();};
+
+function saveEdit(){
+  const s=sel,isA=s._t==='acct';
+  const g=id=>{const el=document.getElementById(id);return el?el.value.trim():null;};
+  const base={name:g('e_name')||s.name,buyer:g('e_buyer'),email:g('e_email'),phone:g('e_phone'),location:g('e_location'),notes:g('e_notes'),channel:g('e_channel'),followupDate:g('e_followupDate')};
+  if(isA){const u={...s,...base,status:g('e_status')||s.status,initialOrder:g('e_initialOrder'),lastOrder:g('e_lastOrder'),payment:g('e_payment'),lastCheckin:g('e_lastCheckin'),paid:g('e_paid')==='true'};accts=accts.map(a=>a.id===s.id?u:a);sel={...u,_t:'acct'};renderAcctFilters();renderAcctTable();}
+  else{const u={...s,...base,stage:g('e_stage')||s.stage,area:g('e_area'),stores:g('e_stores'),dateVisited:g('e_dateVisited')};prspcts=prspcts.map(p=>p.id===s.id?u:p);sel={...u,_t:'prspct'};renderPrspctFilters();renderPrspctTable();}
+  editing=false;save();updateStats();renderDetail();
+}
+
+// ── LOG ───────────────────────────────────────────────────────────────────
+function openLogModal(preId,preType){
+  const modal=document.getElementById('logModal');
+  const lsel=document.getElementById('logStore');
+  const all=[...accts.map(a=>({id:a.id,type:'acct',label:a.name})),...prspcts.map(p=>({id:p.id,type:'prspct',label:p.name+' (prospect)'}))];
+  lsel.innerHTML=all.map(s=>`<option value="${s.id}|${s.type}">${esc(s.label)}</option>`).join('');
+  if(preId){const t=all.find(s=>s.id===preId&&s.type===preType);if(t)lsel.value=`${preId}|${preType}`;}
+  document.getElementById('logNote').value='';
+  document.getElementById('logFollowup').value='';
+  modal.style.display='flex';
+}
+function openLogFor(id,type){openLogModal(id,type);}
+function closeLog(){document.getElementById('logModal').style.display='none';}
+function submitLog(){
+  const parts=document.getElementById('logStore').value.split('|');
+  const sid=parseInt(parts[0]),st=parts[1];
+  const note=document.getElementById('logNote').value.trim();
+  const outcome=document.getElementById('logOutcome').value;
+  const followup=document.getElementById('logFollowup').value;
+  if(!note){alert('Please add a note.');return;}
+  const entry={sid,st,outcome,note,date:today(),who:currentTeam||'Team',followupDate:followup||null};
+  logs.push(entry);
+  if(st==='acct')accts=accts.map(a=>a.id===sid?{...a,lastCheckin:today(),followupDate:followup||a.followupDate}:a);
+  else prspcts=prspcts.map(p=>p.id===sid?{...p,dateVisited:today(),followupDate:followup||p.followupDate}:p);
+  save();closeLog();updateStats();rerender();
+  if(sel?.id===sid){sel=st==='acct'?{...accts.find(a=>a.id===sid),_t:'acct'}:{...prspcts.find(p=>p.id===sid),_t:'prspct'};renderDetail();}
+}
+
+// ── SWITCH VIEW ───────────────────────────────────────────────────────────
+function switchView(v,btn){
+  view=v;search='';filter='All';sel=null;editing=false;
+  const si=document.getElementById('searchInput');if(si)si.value='';
+  document.getElementById('detailPanel').classList.remove('open');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  ['overviewView','prioritiesView','tableView'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('sidebar').style.display=['accounts','pipeline'].includes(v)?'flex':'none';
+  if(v==='overview'){document.getElementById('overviewView').style.display='flex';renderOverview();}
+  else if(v==='priorities'){document.getElementById('prioritiesView').style.display='flex';renderPriorities();}
+  else if(v==='accounts'){document.getElementById('tableView').style.display='flex';renderAcctFilters();renderAcctTable();}
+  else if(v==='pipeline'){document.getElementById('tableView').style.display='flex';renderPrspctFilters();renderPrspctTable();}
+}
+function rerender(){if(view==='overview')renderOverview();else if(view==='priorities')renderPriorities();else if(view==='accounts')renderAcctTable();else if(view==='pipeline')renderPrspctTable();}
+function goPipeline(s){switchView('pipeline');filter=s;renderPrspctFilters();renderPrspctTable();}
+function goItem(id,type){if(type==='account'){switchView('accounts',document.querySelectorAll('.nav-btn')[2]);setTimeout(()=>selAcct(id),50);}else{switchView('pipeline',document.querySelectorAll('.nav-btn')[3]);setTimeout(()=>selPrspct(id),50);}}
+function updateStats(){
+  document.getElementById('hLive').textContent=accts.filter(a=>a.status==='Live').length;
+  document.getElementById('hUnpaid').textContent=accts.filter(a=>!a.paid&&(a.status==='Live'||a.status==='Trial')).length;
+  document.getElementById('hPipeline').textContent=prspcts.filter(p=>!['7-Closed Lost','6-Closed Won'].includes(p.stage)).length;
+  document.getElementById('priCount').textContent=getPriorities().length;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+updateStats();
+renderOverview();
+</script>
+</body>
+</html>
